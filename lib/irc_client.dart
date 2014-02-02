@@ -23,10 +23,12 @@
  */
 library irc_client;
 
-import 'dart:io';
+//import 'dart:io';
+import 'dart:html';
 import 'dart:async';
 import 'dart:convert';
 import 'package:logging/logging.dart';
+import 'dart:typed_data';
 
 part 'src/constants.dart';
 part 'src/connection.dart';

@@ -6,14 +6,14 @@ part of irc_client;
  */
 class Connection {
   Logger ioLog = new Logger("io");
-  StringSink _socket;
+  WebSocket _socket;
   String _nick;
   String _server;
   String _realName;
-  int _port;
+  //int _port;
   List<Handler> _handlers;
   
-  Connection._(this._server, this._port, this._nick, this._realName, this._handlers);
+  Connection._(this._server, this._nick, this._realName, this._handlers);
   
   /**
    * Returns the current nickname
@@ -26,7 +26,8 @@ class Connection {
    */
   void write(String message) {
     ioLog.fine(">>${message}");
-    _socket.writeln(message);
+    //_socket.sendByteBuffer(new Uint8List.fromList(UTF8.encode(message + "\r\n")).buffer);
+    _socket.sendString(message + "\r\n");
   }
   
   /**
@@ -78,12 +79,22 @@ class Connection {
     });
   }
   
+  newBytesGetter() {
+    return new StreamTransformer.fromHandlers(handleData: (MessageEvent event, EventSink<List<int>> sink) {
+      sink.add(new Uint8List.view(event.data));
+    });
+  }
+  
   /**
    * Attemps to connect to the server that this connection handles.
    */
   void connect() {
-    Socket.connect(_server, _port).then((socket) {
-      var stream = socket
+    //Socket.connect(_server, _port).then((socket) {
+    var socket = new WebSocket(_server,"binary");
+    socket.binaryType = "arraybuffer";
+    socket.onOpen.listen((openedEvent) {
+      var stream = socket.onMessage
+          .transform(newBytesGetter())
           .transform(UTF8.decoder)
           .transform(new LineSplitter())
           .transform(newIrcTransformer());
@@ -124,9 +135,7 @@ class Connection {
             write("${Commands.PONG} ${cmd.params[0]}");
           }
         }
-      },
-      onError: _onError, 
-      onDone: _onDone);
+      });
     });
   }
   

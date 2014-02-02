@@ -47,8 +47,8 @@ class IrcClient {
    * Connects to the [server] on the given [port], and returns the
    * [Connection].
    */
-  Connection connect(String server, [int port = 6667]) {
-    var cnx = new Connection._(server, port, nick, realName, _handlers);
+  Connection connect(String server) {
+    var cnx = new Connection._(server, nick, realName, _handlers);
     cnx.connect();
     return cnx;
   }
